@@ -16,7 +16,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-    const { username, password, email, firstName, lastName } = req.body;
+    try{
+         const { username, password, email, firstName, lastName } = req.body;
     if(!username){
         return res.status(400).json("Username is required");
     }
@@ -42,6 +43,8 @@ app.post('/register', (req, res) => {
     }
     if(!validator.isStrongPassword(password)){
         return res.status(400).json("Password is not strong enough");
+
+    
     }
 
     const data = {
@@ -54,11 +57,16 @@ app.post('/register', (req, res) => {
 
     accounts.push(data);
     res.status(201).json({ message: "Account registered successfully", account: data });
+    }
+    catch (error) {
+        res.status(500).json("Internal server error");
+    }
 });
 
 
 app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    try {
+        const { username, password } = req.body;
 
     if (!username) {
         return res.status(400).json("Username is required");
@@ -74,10 +82,6 @@ app.post('/login', (req, res) => {
         return res.status(400).json("Invalid password");
     }
     res.status(200).json({ message: "Login successful", account: usernameIsExist });
-    
-    try {
-        const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ message: "Login successful", token });
     } catch (error) {
         res.status(500).json("Internal server error");
     }
