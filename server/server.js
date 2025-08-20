@@ -20,6 +20,10 @@ app.post('/register', (req, res) => {
     if(!username){
         return res.status(400).json("Username is required");
     }
+    const usernameIsExist= accounts.find(account => account.username === username);
+    if(usernameIsExist){
+        return res.status(400).json("Username already exists");
+    }
     if(!password){
         return res.status(400).json("Password is required");
     }
@@ -51,6 +55,35 @@ app.post('/register', (req, res) => {
     accounts.push(data);
     res.status(201).json({ message: "Account registered successfully", account: data });
 });
+
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username) {
+        return res.status(400).json("Username is required");
+    }
+    if (!password) {
+        return res.status(400).json("Password is required");
+    }
+     const usernameIsExist= accounts.find(account => account.username === username);
+    if(!usernameIsExist){
+        return res.status(400).json("Username does not exist");
+    }
+    if(usernameIsExist.password !== password){
+        return res.status(400).json("Invalid password");
+    }
+    res.status(200).json({ message: "Login successful", account: usernameIsExist });
+    
+    try {
+        const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.json({ message: "Login successful", token });
+    } catch (error) {
+        res.status(500).json("Internal server error");
+    }
+});
+
+
 
 app.listen(8000, () => {
     console.log("Server is running on port 8000");
